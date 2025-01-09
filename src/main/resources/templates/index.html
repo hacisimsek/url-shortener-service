@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>URL Shortener</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-center mb-8">URL Kısaltma Servisi</h1>
+
+    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
+        <form id="urlForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">URL'nizi Girin</label>
+                <input type="url" id="url" name="url" required
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+
+            <button type="submit"
+                    class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                URL'yi Kısalt
+            </button>
+        </form>
+
+        <div id="result" class="mt-4 hidden">
+            <div class="p-4 bg-green-50 rounded-md">
+                <p class="text-sm text-gray-600">Kısaltılmış URL:</p>
+                <div class="flex items-center mt-1">
+                    <input type="text" id="shortUrl" readonly
+                           class="flex-1 block rounded-md border-gray-300 bg-gray-50">
+                    <button onclick="copyToClipboard()"
+                            class="ml-2 px-3 py-1 bg-gray-600 text-white rounded-md hover:bg-gray-700">
+                        Kopyala
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('urlForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const url = document.getElementById('url').value;
+
+        try {
+            const response = await fetch('/shorten', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `url=${encodeURIComponent(url)}`
+            });
+
+            const data = await response.json();
+            const shortUrl = `${window.location.origin}/${data.shortCode}`;
+
+            document.getElementById('shortUrl').value = shortUrl;
+            document.getElementById('result').classList.remove('hidden');
+        } catch (error) {
+            alert('Hata oluştu: ' + error.message);
+        }
+    });
+
+    function copyToClipboard() {
+        const shortUrl = document.getElementById('shortUrl');
+        shortUrl.select();
+        document.execCommand('copy');
+        alert('URL kopyalandı!');
+    }
+</script>
+</body>
+</html>
